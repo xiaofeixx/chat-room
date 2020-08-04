@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>在线聊天室2</title>
+</head>
+<body>
+
+用户id <input type="text" id="userid">
+朋友id<input type="text" id="friendId">
+<input type="text" id="message" />
+
+<input type="button" id="submit" value="发送" onclick="sendMessage()">
+
+<p id="server_message"  style="background-color: #AAAAAA"></p>
+
+<script>
+
+    let websocket = null;
+
+    if (window.WebSocket) {
+        websocket = new WebSocket("ws://127.0.0.1:9090/ws")
+
+        websocket.onopen = function () {
+        console.log("建立连接")
+            var msg = getMessage(0, 2, null, null, null, null);
+            websocket.send(JSON.stringify(msg))
+            setInterval(() => {
+                const message = getMessage(2, null, null, null, null, null);
+                websocket.send(JSON.stringify(message))
+                console.log("dasdasdas")
+            }, 10000)
+        }
+
+        websocket.onclose = function () {
+        console.log("断开连接！！！")
+        }
+
+        websocket.onmessage = function (msg) {
+        console.log("收到的消息:" + msg.data);
+
+         var server_message  = document.getElementById("server_message");
+
+            server_message.innerHTML += msg.data + "<br/>"
+        }
+    } else {
+        alert("游览器不支持webSocket")
+    }
+
+
+    function sendMessage() {
+        var userid = document.getElementById("userid");
+        var friendId = document.getElementById("friendId")
+      var message =  document.getElementById("message")
+      var msg = getMessage(1, userid.value, friendId.value, message.value, null, null);
+        websocket.send(JSON.stringify(msg))
+    }
+
+    function getMessage(type, userid, friendid, msg, msgid, ext) {
+        return {
+            type: type,
+            chatRecord: {
+                id: msgid,
+                userid: userid,
+                friendid: friendid,
+                message: msg,
+            },
+            ext: ext
+        }
+    }
+</script>
+
+
+</body>
+</html>
